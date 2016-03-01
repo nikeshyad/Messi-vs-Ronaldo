@@ -23,7 +23,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 ## Part One: Importing the datas
 ```{r}
 #setwd('Desktop/Final')
-#Set working directory to the path where football.py is located
+#Set working directory to the path where scrape.py is located
 all_comp <- read.csv('all_competitions.csv',header=TRUE,stringsAsFactors = FALSE)
 champions_league <- read.csv('champions_league.csv',header=TRUE, stringsAsFactors = FALSE)
 la_liga <- read.csv('la_liga.csv',header=TRUE, stringsAsFactors = FALSE)
