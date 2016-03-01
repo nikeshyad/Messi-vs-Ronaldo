@@ -1,1 +1,1 @@
-#messi-vs-ronaldo
+scrape.py scrapes the football data of Messi and Ronaldo from the website "messivsronaldo.net". The football data are from champions league, la liga and all competitions. The program also generates three csv files. The generated files are then imported in R studio from the codes in R markdown file, and after some data cleaning, analysis is done with different plots.
