@@ -1,0 +1,297 @@
+---
+author: Nikesh Yadav
+title: "Messi vs Ronaldo"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+#summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+#plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Part One: Importing the datas
+```{r}
+#setwd('Desktop/Final')
+#Set working directory to the path where football.py is located
+all_comp <- read.csv('all_competitions.csv',header=TRUE,stringsAsFactors = FALSE)
+champions_league <- read.csv('champions_league.csv',header=TRUE, stringsAsFactors = FALSE)
+la_liga <- read.csv('la_liga.csv',header=TRUE, stringsAsFactors = FALSE)
+```
+
+## Part Two: Data Cleaning
+```{r}
+all_comp$X <- NULL
+champions_league$X <- NULL
+la_liga$X <- NULL
+all_comp <- all_comp[-length(all_comp$messiApps),]
+all_comp <- all_comp[-which(all_comp$messiApps=='/'),]
+champions_league <- champions_league[-length(champions_league$messiApps),]
+champions_league <- champions_league[-which(champions_league$messiApps=='/'),]
+la_liga <- la_liga[-length(la_liga$messiApps),]
+la_liga <- la_liga[-which(la_liga$messiApps=='/'),]
+all_comp$messiGoals<-as.numeric(all_comp$messiGoals)
+all_comp$season <- 2015:2004
+champions_league$season <- 2015:2004
+la_liga$season <- 2015:2004
+
+```
+
+## Part Three: Plots for All Competitions
+1. Scatterplots and bar charts of Appearances vs Goals for both Messi and Ronaldo. Combine four plots. Bar Chart can provide information about the datas more cleary than scatterplots.
+
+```{r,echo=FALSE, fig.width=15, fig.height=10}
+#install.packages('ggplot2')
+#install.packages('grid')
+#install.packages('gridExtra')
+library(ggplot2)
+library(grid)
+library(gridExtra)
+
+messi_scatter_all <- ggplot(data=all_comp,aes(x=messiApps,y=messiGoals,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') +ylab('Goals') + ggtitle('Scatterplot of Messi Apps vs Goals')
+ronaldo_scatter_all <- ggplot(data= all_comp,aes(x=ronaldoApps,y=ronaldoGoals))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') + ylab('Goals') + ggtitle('Scatterplot of Ronaldo Apps vs Goals')
+
+messi_bar_all <- ggplot(data=all_comp,aes(x=messiApps,y=messiGoals)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity',position='dodge')+xlab('Appearances')+ylab('Goals')+ggtitle('Bar Chart of Messi Apps vs Goals') + coord_cartesian(ylim=c(0,80))
+ronaldo_bar_all <- ggplot(data=all_comp,aes(x=ronaldoApps,y=ronaldoGoals)) + coord_cartesian(ylim=c(0,80))+ geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity',position='dodge')+xlab('Appearances')+ylab('Goals')+ggtitle('Bar Chart of Ronaldo Apps vs Goals') 
+
+grid.arrange(messi_scatter_all,ronaldo_scatter_all,messi_bar_all,ronaldo_bar_all, ncol=2)
+
+```
+The regression line for both scatterplots is almost similar showing that the distribution of goals for both players is even with respect to their number of appearacnes. The bar plot shows more clearer picture where it appears that Messi has better goal scoring records.
+
+
+2. Scatterplots and bar charts of goals vs seasons for both Messi and Ronaldo. 
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_season_scatter_all <- ggplot(data=all_comp,aes(x=season,y=messiGoals))+geom_point(color='red',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Goals')+ggtitle('Scatterplot of Messi Seasons/Goals')
+ronaldo_season_scatter_all <- ggplot(data=all_comp,aes(x=season,y=ronaldoGoals))+geom_point(color='blue',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Goals')+ggtitle('Scatterplot of Ronaldo Seasons/Goals')
+
+messi_season_bar_all <- ggplot(data=all_comp,aes(x=season,y=messiGoals)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Goals')+ggtitle('Bar Chart of Messi Seasons/Goals')
+ronaldo_season_bar_all <- ggplot(data=all_comp,aes(x=season,y=ronaldoGoals)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Goals')+ggtitle('Bar Chart of Ronaldo Seasons/Goals') + coord_cartesian(ylim=c(0,80))
+
+grid.arrange(messi_season_scatter_all,ronaldo_season_scatter_all,messi_season_bar_all,ronaldo_season_bar_all, ncol=2)
+
+```
+The bar plots shows that Messi has better goal scoring records with respect to seasons than Messi while Ronaldo has better records in recent seasons.
+
+
+3. Scatterplots and Bar Charts of Goal Ratio vs Seasons for both Messi and Ronaldo. Combine the four plots.
+```{r, echo=FALSE,fig.width=15, fig.height=10}
+all_comp$messiGoalRatio  <- as.numeric(all_comp$messiGoals)/as.numeric(all_comp$messiApps)
+all_comp$ronaldoGoalRatio <- as.numeric(all_comp$ronaldoGoals)/as.numeric(all_comp$ronaldoApps)
+
+messi_scatter_goalratio_all <- ggplot(data=all_comp,aes(x=season,y=messiGoalRatio,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') +ylab('Goal Ratio') + ggtitle('Scatterplot of Messi Goal Ratio/Seasons')
+ronaldo_scatter_goalratio_all <- ggplot(data= all_comp,aes(x=season,y=ronaldoGoalRatio))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') + ylab('Goal Ratio') + ggtitle('Scatterplot of Ronaldo Goal Ratio/Seasons')
+
+messi_bar_goalratio_all <- ggplot(data=all_comp,aes(x=season,y=messiGoalRatio)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Goal Ratio')+ggtitle('Bar Chart of Messi Goal Ratio/Seasons')
+ronaldo_bar_goalratio_all <- ggplot(data=all_comp,aes(x=season,y=ronaldoGoalRatio)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Goal Ratio')+ggtitle('Bar Chart of Ronaldo Goal Ratio/Seasons') + coord_cartesian(ylim=c(0.0,1.25))
+
+grid.arrange(messi_scatter_goalratio_all, ronaldo_scatter_goalratio_all,messi_bar_goalratio_all,ronaldo_bar_goalratio_all, ncol = 2)
+
+```
+I wanted to see how the ratio of goals (goals scored per appearance) compares for the players in different seasons. The bar plot shows Ronaldo has better goal ratio than Messi overall.
+
+
+4. Scatterplots and bar charts of Apeearances vs Assists for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_scatter1_all <- ggplot(data=all_comp,aes(x=messiApps,y=messiAssists,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') +ylab('Assists') + ggtitle('Scatterplot of Messi Apps vs Assists')+ theme(axis.text.y = element_blank())
+ronaldo_scatter1_all <- ggplot(data= all_comp,aes(x=ronaldoApps,y=ronaldoAssists))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') + ylab('Assists') + ggtitle('Scatterplot of Ronaldo Apps vs Assists') + theme(axis.text.y = element_blank())
+
+messi_bar1_all <- ggplot(data=all_comp,aes(x=messiApps,y=messiAssists)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Appearances')+ylab('Assists')+ggtitle('Bar Chart of Messi Apps vs Assists')+ theme(axis.text.y = element_blank())
+ronaldo_bar1_all <- ggplot(data=all_comp,aes(x=ronaldoApps,y=ronaldoGoals)) + geom_bar(color='blue',width=1.5,fill="#2600E5",stat='identity',position='dodge')+xlab('Appearances')+ylab('Assists')+ggtitle('Bar Chart of Ronaldo Apps vs Assists') + theme(axis.text.y = element_blank())
+
+grid.arrange(messi_scatter1_all, ronaldo_scatter1_all,messi_bar1_all,ronaldo_bar1_all, ncol = 2)
+```
+The bar plot also shows Messi's assist to be better than Ronaldo.
+
+
+5. Scatterplots and bar charts of Assists in different seasons for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_season1_scatter_all <- ggplot(data=all_comp,aes(x=season,y=messiAssists,group=1))+geom_point(color='red',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Assists')+ggtitle('Scatterplot of Messi Seasons/Assists') + theme(axis.text.y = element_blank())
+ronaldo_season1_scatter_all <- ggplot(data=all_comp,aes(x=season,y=ronaldoAssists))+geom_point(color='blue',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Assists')+ggtitle('Scatterplot of Ronaldo Seasons/Assists') + theme(axis.text.y = element_blank())
+
+messi_season1_bar_all <- ggplot(data=all_comp,aes(x=season,y=messiAssists)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Assists')+ggtitle('Bar Chart of Messi Seasons/Assists')+ theme(axis.text.y = element_blank())
+ronaldo_season1_bar_all <- ggplot(data=all_comp,aes(x=season,y=ronaldoAssists)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Assists')+ggtitle('Bar Chart of Ronaldo Seasons/Assists')+ theme(axis.text.y = element_blank())
+grid.arrange(messi_season1_scatter_all,ronaldo_season1_scatter_all,messi_season1_bar_all,ronaldo_season1_bar_all, ncol=2)
+```
+The bar plot shows Messi has better assists than Ronaldo in different seasons.
+
+
+6. Scatterplots and Bar Charts of Seasons vs Assist Ratio for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+all_comp$messiAssistRatio  <- as.numeric(all_comp$messiAssists)/as.numeric(all_comp$messiApps)
+all_comp$ronaldoAssistRatio <- as.numeric(all_comp$ronaldoAssists)/as.numeric(all_comp$ronaldoApps)
+
+messi_scatter_assistratio_all <- ggplot(data=all_comp,aes(x=season,y=messiAssistRatio,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') +ylab('Assist Ratio') + ggtitle('Scatterplot of Messi Assist Ratio/Seasons')
+ronaldo_scatter_assistratio_all <- ggplot(data= all_comp,aes(x=season,y=ronaldoAssistRatio))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') + ylab('Assist Ratio') + ggtitle('Scatterplot of Ronaldo Assist Ratio/Seasons')
+
+messi_bar_assistratio_all <- ggplot(data=all_comp,aes(x=season,y=messiAssistRatio)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Assist Ratio')+ggtitle('Bar Chart of Messi Assist Ratio/Seasons')
+ronaldo_bar_assistratio_all <- ggplot(data=all_comp,aes(x=season,y=ronaldoAssistRatio)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Assist Ratio')+ggtitle('Bar Chart of Ronaldo Assist Ratio/Seasons') + coord_cartesian(ylim=c(0.0,0.5))
+grid.arrange(messi_scatter_assistratio_all, ronaldo_scatter_assistratio_all,messi_bar_assistratio_all,ronaldo_bar_assistratio_all, ncol = 2)
+```
+The bar plot shows Messi has better assist ratio than Ronaldo with respsect to different seasons overall.
+
+
+## Part Four: Plots for Champions League
+1. Scatterplots and bar plots of Appearances vs Goals for Messi and Ronaldo
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_scatter_cl <- ggplot(data=champions_league,aes(x=messiApps,y=messiGoals,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') +ylab('Goals') + ggtitle('Scatterplot of Messi Apps vs Goals') + theme(axis.text.y = element_blank())
+ronaldo_scatter_cl <- ggplot(data=champions_league,aes(x=ronaldoApps,y=ronaldoGoals))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') + ylab('Goals') + ggtitle('Scatterplot of Ronaldo Apps vs Goals')+ theme(axis.text.y = element_blank())
+
+messi_bar_cl<- ggplot(data=champions_league,aes(x=messiApps,y=messiGoals)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity',position = 'dodge')+xlab('Appearances')+ylab('Goals')+ggtitle('Bar Chart of Messi Apps vs Goals')+ theme(axis.text.y = element_blank())
+ronaldo_bar_cl <- ggplot(data=champions_league,aes(x=ronaldoApps,y=ronaldoGoals)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity',position='dodge')+xlab('Appearances')+ylab('Goals')+ggtitle('Bar Chart of Ronaldo Apps vs Goals')+ theme(axis.text.y = element_blank())
+
+grid.arrange(messi_scatter_cl,ronaldo_scatter_cl,messi_bar_cl,ronaldo_bar_cl, ncol=2)
+
+```
+
+
+2. Scatterplots and bar chart of Goals vs Seasons for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_season_scatter_cl <- ggplot(data=champions_league,aes(x=season,y=messiGoals))+geom_point(color='red',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Goals')+ggtitle('Scatterplot of Messi Seasons/Goals')+ theme(axis.text.y = element_blank())
+ronaldo_season_scatter_cl <- ggplot(data=champions_league,aes(x=season,y=ronaldoGoals))+geom_point(color='blue',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Goals')+ggtitle('Scatterplot of Ronaldo Seasons/Goals')+ theme(axis.text.y = element_blank())
+
+messi_season_bar_cl <- ggplot(data=champions_league,aes(x=season,y=messiGoals)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Goals')+ggtitle('Bar Chart of Messi Seasons/Goals')+ theme(axis.text.y = element_blank())
+ronaldo_season_bar_cl <- ggplot(data=champions_league,aes(x=season,y=ronaldoGoals)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Goals')+ggtitle('Bar Chart of Ronaldo Seasons/Goals')+ theme(axis.text.y = element_blank())
+
+grid.arrange(messi_season_scatter_cl,ronaldo_season_scatter_cl,messi_season_bar_cl,ronaldo_season_bar_cl, ncol=2)
+```
+
+3. Scatterplots and Bar Charts of Goal Ratio vs Seasons for both Messi and Ronaldo. 
+```{r, echo=FALSE,fig.width=15, fig.height=10}
+champions_league$messiGoalRatio  <- as.numeric(champions_league$messiGoals)/as.numeric(champions_league$messiApps)
+champions_league$ronaldoGoalRatio <- as.numeric(champions_league$ronaldoGoals)/as.numeric(champions_league$ronaldoApps)
+
+messi_scatter_goalratio_cl <- ggplot(data=champions_league,aes(x=season,y=messiGoalRatio,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') +ylab('Goal Ratio') + ggtitle('Scatterplot of Messi Goal Ratio/Seasons') + theme(axis.text.y = element_blank())
+ronaldo_scatter_goalratio_cl <- ggplot(data= champions_league,aes(x=season,y=ronaldoGoalRatio))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') + ylab('Goal Ratio') + ggtitle('Scatterplot of Ronaldo Goal Ratio/Seasons')+ theme(axis.text.y = element_blank())
+
+messi_bar_goalratio_cl <- ggplot(data=champions_league,aes(x=season,y=messiGoalRatio)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Goal Ratio')+ggtitle('Bar Chart of Messi Goal Ratio/Seasons') + theme(axis.text.y = element_blank())
+ronaldo_bar_goalratio_cl <- ggplot(data=champions_league,aes(x=season,y=ronaldoGoalRatio)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Goal Ratio')+ggtitle('Bar Chart of Ronaldo Goal Ratio/Seasons')+ theme(axis.text.y = element_blank())
+grid.arrange(messi_scatter_goalratio_cl, ronaldo_scatter_goalratio_cl,messi_bar_goalratio_cl,ronaldo_bar_goalratio_cl, ncol = 2)
+```
+It shows Messi has overall better goal ratio with seasons but Ronaldo has better goal ratio in recent seasons.
+
+
+4. Scatterplots and bar charts of Apeearances vs Assists for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_scatter1_cl <- ggplot(data=champions_league,aes(x=messiApps,y=messiAssists,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') +ylab('Assists') + ggtitle('Scatterplot of Messi Apps vs Assists')+ theme(axis.text.y = element_blank())
+ronaldo_scatter1_cl <- ggplot(data= champions_league,aes(x=ronaldoApps,y=ronaldoAssists))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') + ylab('Assists') + ggtitle('Scatterplot of Ronaldo Apps vs Assists')+ theme(axis.text.y = element_blank())
+
+messi_bar1_cl <- ggplot(data=champions_league,aes(x=messiApps,y=messiAssists)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity',position = 'dodge')+xlab('Appearances')+ylab('Assists')+ggtitle('Bar Chart of Messi Apps vs Assists') + theme(axis.text.y = element_blank())
+ronaldo_bar1_cl <- ggplot(data=champions_league,aes(x=ronaldoApps,y=ronaldoGoals)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity',position = 'dodge')+xlab('Appearances')+ylab('Assists')+ggtitle('Bar Chart of Ronaldo Apps vs Assists')+ theme(axis.text.y = element_blank())
+grid.arrange(messi_scatter1_cl, ronaldo_scatter1_cl,messi_bar1_cl,ronaldo_bar1_cl, ncol = 2)
+```
+
+
+5. Scatterplots and bar charts of Assists in different seasons for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_season1_scatter_cl <- ggplot(data=champions_league,aes(x=season,y=messiAssists,group=1))+geom_point(color='red',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Assists')+ggtitle('Scatterplot of Messi Seasons/Assists')+ theme(axis.text.y = element_blank())
+ronaldo_season1_scatter_cl <- ggplot(data=champions_league,aes(x=season,y=ronaldoAssists))+geom_point(color='blue',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Assists')+ggtitle('Scatterplot of Ronaldo Seasons/Assists')+ theme(axis.text.y = element_blank())
+
+messi_season1_bar_cl <- ggplot(data=champions_league,aes(x=season,y=messiAssists)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Assists')+ggtitle('Bar Chart of Messi Seasons/Assists') + theme(axis.text.y = element_blank())
+ronaldo_season1_bar_cl <- ggplot(data=champions_league,aes(x=season,y=ronaldoAssists)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Assists')+ggtitle('Bar Chart of Ronaldo Seasons/Assists') + theme(axis.text.y = element_blank())
+
+grid.arrange(messi_season1_scatter_cl,ronaldo_season1_scatter_cl,messi_season1_bar_cl,ronaldo_season1_bar_cl, ncol=2)
+```
+
+
+6. Scatterplots and Bar Charts of Seasons vs Assist Ratio for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+champions_league$messiAssistRatio  <- as.numeric(champions_league$messiAssists)/as.numeric(champions_league$messiApps)
+champions_league$ronaldoAssistRatio <- as.numeric(champions_league$ronaldoAssists)/as.numeric(champions_league$ronaldoApps)
+
+messi_scatter_assistratio_cl <- ggplot(data=champions_league,aes(x=season,y=messiAssistRatio,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') +ylab('Assist Ratio') + ggtitle('Scatterplot of Messi Assist Ratio/Seasons')+ theme(axis.text.y = element_blank())
+ronaldo_scatter_assistratio_cl <- ggplot(data= champions_league,aes(x=season,y=ronaldoAssistRatio))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') + ylab('Assist Ratio') + ggtitle('Scatterplot of Ronaldo Assist Ratio/Seasons')+ theme(axis.text.y = element_blank())
+
+messi_bar_assistratio_cl <- ggplot(data=champions_league,aes(x=season,y=messiAssistRatio)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Assist Ratio')+ggtitle('Bar Chart of Messi Assist Ratio/Seasons') + theme(axis.text.y = element_blank())
+ronaldo_bar_assistratio_cl <- ggplot(data=champions_league,aes(x=season,y=ronaldoAssistRatio)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Assist Ratio')+ggtitle('Bar Chart of Ronaldo Assist Ratio/Seasons') + theme(axis.text.y = element_blank())
+grid.arrange(messi_scatter_assistratio_cl, ronaldo_scatter_assistratio_cl,messi_bar_assistratio_cl,ronaldo_bar_assistratio_cl, ncol = 2)
+```
+The plots show that Messi has better goals and assist statistics than Ronaldo in champions league.
+
+
+## Part Five: Plots for La Liga
+1. Scatterplots and bar plots of Appearances vs Goals for Messi and Ronaldo
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_scatter_ll <- ggplot(data=la_liga,aes(x=messiApps,y=messiGoals,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') +ylab('Goals') + ggtitle('Scatterplot of Messi Apps vs Goals') + theme(axis.text.y = element_blank())
+ronaldo_scatter_ll <- ggplot(data=la_liga,aes(x=ronaldoApps,y=ronaldoGoals))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') + ylab('Goals') + ggtitle('Scatterplot of Ronaldo Apps vs Goals')+ theme(axis.text.y = element_blank())
+
+messi_bar_ll<- ggplot(data=la_liga,aes(x=messiApps,y=messiGoals)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Appearances')+ylab('Goals')+ggtitle('Bar Chart of Messi Apps vs Goals')+ theme(axis.text.y = element_blank())
+ronaldo_bar_ll <- ggplot(data=la_liga,aes(x=ronaldoApps,y=ronaldoGoals)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity',position = 'dodge')+xlab('Appearances')+ylab('Goals')+ggtitle('Bar Chart of Ronaldo Apps vs Goals')+ theme(axis.text.y = element_blank())
+
+grid.arrange(messi_scatter_ll,ronaldo_scatter_ll,messi_bar_ll,ronaldo_bar_ll, ncol=2)
+```
+
+
+2. Scatterplots and bar chart of Goals vs Seasons for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_season_scatter_ll <- ggplot(data=la_liga,aes(x=season,y=messiGoals))+geom_point(color='red',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Goals')+ggtitle('Scatterplot of Messi Seasons/Goals')+ theme(axis.text.y = element_blank())
+ronaldo_season_scatter_ll <- ggplot(data=la_liga,aes(x=season,y=ronaldoGoals))+geom_point(color='blue',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Goals')+ggtitle('Scatterplot of Ronaldo Seasons/Goals')+ theme(axis.text.y = element_blank())
+
+messi_season_bar_ll <- ggplot(data=la_liga,aes(x=season,y=messiGoals)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Goals')+ggtitle('Bar Chart of Messi Seasons/Goals')+ theme(axis.text.y = element_blank())
+ronaldo_season_bar_ll <- ggplot(data=la_liga,aes(x=season,y=ronaldoGoals)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Goals')+ggtitle('Bar Chart of Ronaldo Seasons/Goals')+ theme(axis.text.y = element_blank())
+
+grid.arrange(messi_season_scatter_ll,ronaldo_season_scatter_ll,messi_season_bar_ll,ronaldo_season_bar_ll, ncol=2)
+```
+
+3. Scatterplots and Bar Charts of Goal Ratio vs Seasons for both Messi and Ronaldo. 
+```{r, echo=FALSE,fig.width=15, fig.height=10}
+la_liga$messiGoalRatio  <- as.numeric(la_liga$messiGoals)/as.numeric(la_liga$messiApps)
+la_liga$ronaldoGoalRatio <- as.numeric(la_liga$ronaldoGoals)/as.numeric(la_liga$ronaldoApps)
+
+messi_scatter_goalratio_ll <- ggplot(data=la_liga,aes(x=season,y=messiGoalRatio,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') +ylab('Goal Ratio') + ggtitle('Scatterplot of Messi Goal Ratio/Seasons')+ theme(axis.text.y = element_blank())
+ronaldo_scatter_goalratio_ll <- ggplot(data= la_liga,aes(x=season,y=ronaldoGoalRatio))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') + ylab('Goal Ratio') + ggtitle('Scatterplot of Ronaldo Goal Ratio/Seasons')+ theme(axis.text.y = element_blank())
+
+messi_bar_goalratio_ll <- ggplot(data=la_liga,aes(x=season,y=messiGoalRatio)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Goal Ratio')+ggtitle('Bar Chart of Messi Goal Ratio/Seasons')+ theme(axis.text.y = element_blank())
+ronaldo_bar_goalratio_ll <- ggplot(data=la_liga,aes(x=season,y=ronaldoGoalRatio)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Goal Ratio')+ggtitle('Bar Chart of Ronaldo Goal Ratio/Seasons')+ theme(axis.text.y = element_blank())
+grid.arrange(messi_scatter_goalratio_ll, ronaldo_scatter_goalratio_ll,messi_bar_goalratio_ll,ronaldo_bar_goalratio_ll, ncol = 2)
+```
+
+
+4. Scatterplots and bar charts of Apeearances vs Assists for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_scatter1_ll <- ggplot(data=la_liga,aes(x=messiApps,y=messiAssists,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') +ylab('Assists') + ggtitle('Scatterplot of Messi Apps vs Assists')+ theme(axis.text.y = element_blank())
+ronaldo_scatter1_ll <- ggplot(data= la_liga,aes(x=ronaldoApps,y=ronaldoAssists))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Appearances') + ylab('Assists') + ggtitle('Scatterplot of Ronaldo Apps vs Assists')+ theme(axis.text.y = element_blank())
+
+messi_bar1_ll <- ggplot(data=la_liga,aes(x=messiApps,y=messiAssists)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Appearances')+ylab('Assists')+ggtitle('Bar Chart of Messi Apps vs Assists')+ theme(axis.text.y = element_blank())
+ronaldo_bar1_ll <- ggplot(data=la_liga,aes(x=ronaldoApps,y=ronaldoGoals)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity',position = 'dodge')+xlab('Appearances')+ylab('Assists')+ggtitle('Bar Chart of Ronaldo Apps vs Assists')+ theme(axis.text.y = element_blank())
+grid.arrange(messi_scatter1_ll, ronaldo_scatter1_ll,messi_bar1_ll,ronaldo_bar1_ll, ncol = 2)
+```
+
+
+5. Scatterplots and bar charts of Assists in different seasons for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+messi_season1_scatter_ll <- ggplot(data=la_liga,aes(x=season,y=messiAssists,group=1))+geom_point(color='red',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Assists')+ggtitle('Scatterplot of Messi Seasons/Assists')+ theme(axis.text.y = element_blank())
+ronaldo_season1_scatter_ll <- ggplot(data=la_liga,aes(x=season,y=ronaldoAssists))+geom_point(color='blue',size=6)+geom_smooth(method='lm',linetype=2,size=1)+xlab('Seasons')+ylab('Assists')+ggtitle('Scatterplot of Ronaldo Seasons/Assists')+ theme(axis.text.y = element_blank())
+
+messi_season1_bar_ll <- ggplot(data=la_liga,aes(x=season,y=messiAssists)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Assists')+ggtitle('Bar Chart of Messi Seasons/Assists')+ theme(axis.text.y = element_blank())
+ronaldo_season1_bar_ll <- ggplot(data=la_liga,aes(x=season,y=ronaldoAssists)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Assists')+ggtitle('Bar Chart of Ronaldo Seasons/Assists')+ theme(axis.text.y = element_blank())
+
+grid.arrange(messi_season1_scatter_ll,ronaldo_season1_scatter_ll,messi_season1_bar_ll,ronaldo_season1_bar_ll, ncol=2)
+```
+
+
+6. Scatterplots and Bar Charts of Seasons vs Assist Ratio for both Messi and Ronaldo.
+```{r,echo=FALSE,fig.width=15, fig.height=10}
+la_liga$messiAssistRatio  <- as.numeric(la_liga$messiAssists)/as.numeric(la_liga$messiApps)
+la_liga$ronaldoAssistRatio <- as.numeric(la_liga$ronaldoAssists)/as.numeric(la_liga$ronaldoApps)
+
+messi_scatter_assistratio_ll <- ggplot(data=la_liga,aes(x=season,y=messiAssistRatio,group=1)) +geom_point(color='red',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') +ylab('Assist Ratio') + ggtitle('Scatterplot of Messi Assist Ratio/Seasons')+ theme(axis.text.y = element_blank())
+ronaldo_scatter_assistratio_ll <- ggplot(data= la_liga,aes(x=season,y=ronaldoAssistRatio))+geom_point(color='blue',size=6) + geom_smooth(method='lm',linetype=2,size=1)+ xlab('Seasons') + ylab('Assist Ratio') + ggtitle('Scatterplot of Ronaldo Assist Ratio/Seasons')+ theme(axis.text.y = element_blank())
+
+messi_bar_assistratio_ll <- ggplot(data=la_liga,aes(x=season,y=messiAssistRatio)) + geom_bar(color='red',width=0.8,fill="#DD8888",stat='identity')+xlab('Seasons')+ylab('Assist Ratio')+ggtitle('Bar Chart of Messi Assist Ratio/Seasons') + coord_cartesian(ylim=c(0,0.5))
+ronaldo_bar_assistratio_ll <- ggplot(data=la_liga,aes(x=season,y=ronaldoAssistRatio)) + geom_bar(color='blue',width=0.8,fill="#2600E5",stat='identity')+xlab('Seasons')+ylab('Assist Ratio')+ggtitle('Bar Chart of Ronaldo Assist Ratio/Seasons')
+grid.arrange(messi_scatter_assistratio_ll, ronaldo_scatter_assistratio_ll,messi_bar_assistratio_ll,ronaldo_bar_assistratio_ll, ncol = 2)
+```
+While Ronaldo's goal ratio is higher in recent seasons, the plots show that overall Messi has better goal and assist records in La Liga too.
+
+Conclusion: Messi and Ronaldo both are one of the greatest players in football history. But using their records of goals and records, we can see that Messi has much better statistics than Ronaldo. Therefore, I conclude that Messi is a better player than Ronaldo.
